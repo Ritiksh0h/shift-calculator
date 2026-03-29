@@ -1,8 +1,3 @@
-// ============================================
-// FILE: README.md
-// PATH: README.md
-// ============================================
-
 # Shift Calculator
 
 A shift management app for tracking work hours, pay calculations, and payday schedules across multiple workplaces.
