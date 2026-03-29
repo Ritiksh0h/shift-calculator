@@ -1,38 +1,27 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { signOut } from "next-auth/react"
-import { Button } from "@/components/ui/button"
-import { LogOut, Loader2 } from "lucide-react"
-import { AuthForm } from "@/components/auth/auth-form"
-import { useShiftData } from "@/hooks/use-shift-data"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs"
+import { useState } from "react";
+import { signOut } from "next-auth/react";
+import { Button } from "@/components/ui/button";
+import { LogOut, Loader2 } from "lucide-react";
+import { AuthForm } from "@/components/auth/auth-form";
+import { useShiftData } from "@/hooks/use-shift-data";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import {
-  Clock,
-  DollarSign,
-  Calendar,
-  Settings,
-  Building2,
-} from "lucide-react"
-import { WorkplaceManager } from "@/components/workplace-manager"
-import { ShiftManager } from "@/components/shift-manager"
-import { CalendarView } from "@/components/calendar-view"
-import { SettingsPanel } from "@/components/settings-panel"
-import { NextShiftCard } from "@/components/next-shift-card"
-import { PaydayTracker } from "@/components/payday-tracker"
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Clock, DollarSign, Calendar, Settings, Building2 } from "lucide-react";
+import { WorkplaceManager } from "@/components/workplace-manager";
+import { ShiftManager } from "@/components/shift-manager";
+import { CalendarView } from "@/components/calendar-view";
+import { SettingsPanel } from "@/components/settings-panel";
+import { NextShiftCard } from "@/components/next-shift-card";
+import { PaydayTracker } from "@/components/payday-tracker";
 
 export default function ShiftCalculator() {
   const {
@@ -52,67 +41,70 @@ export default function ShiftCalculator() {
     updateSettings,
     checkShiftCollision,
     calculateNextPayDate,
-  } = useShiftData()
+  } = useShiftData();
 
-  const [activeTab, setActiveTab] = useState("dashboard")
+  const [activeTab, setActiveTab] = useState("dashboard");
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
-    )
+    );
   }
 
   if (!user) {
-    return <AuthForm />
+    return <AuthForm />;
   }
 
   // Calculate summary stats
   const currentWeekShifts = shifts.filter((shift) => {
-    const shiftDate = new Date(shift.date)
-    const now = new Date()
-    const weekStart = new Date(now.setDate(now.getDate() - now.getDay()))
-    const weekEnd = new Date(weekStart)
-    weekEnd.setDate(weekEnd.getDate() + 6)
-    return shiftDate >= weekStart && shiftDate <= weekEnd
-  })
+    const shiftDate = new Date(shift.date + "T00:00:00");
+    const now = new Date();
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - now.getDay());
+    weekStart.setHours(0, 0, 0, 0);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+    weekEnd.setHours(23, 59, 59, 999);
+    return shiftDate >= weekStart && shiftDate <= weekEnd;
+  });
 
   const weeklyHours = currentWeekShifts.reduce((total, shift) => {
     const hours =
       (new Date(`1970-01-01T${shift.endTime}`).getTime() -
         new Date(`1970-01-01T${shift.startTime}`).getTime()) /
-      (1000 * 60 * 60)
-    const breakHours = shift.breakMinutes ? shift.breakMinutes / 60 : 0
-    return total + (hours - breakHours)
-  }, 0)
+      (1000 * 60 * 60);
+    const breakHours = shift.breakMinutes ? shift.breakMinutes / 60 : 0;
+    return total + (hours - breakHours);
+  }, 0);
 
   const weeklyPayData = currentWeekShifts.reduce(
     (acc, shift) => {
-      const workplace = workplaces.find((w) => w.id === shift.workplaceId)
-      if (!workplace) return acc
+      const workplace = workplaces.find((w) => w.id === shift.workplaceId);
+      if (!workplace) return acc;
 
       const hours =
         (new Date(`1970-01-01T${shift.endTime}`).getTime() -
           new Date(`1970-01-01T${shift.startTime}`).getTime()) /
-        (1000 * 60 * 60)
-      const breakHours = shift.breakMinutes ? shift.breakMinutes / 60 : 0
-      const netHours = hours - breakHours
-      const payRate = shift.payRateOverride || workplace.payRate
-      const grossPay = netHours * payRate
+        (1000 * 60 * 60);
+      const breakHours = shift.breakMinutes ? shift.breakMinutes / 60 : 0;
+      const netHours = hours - breakHours;
+      const payRate = shift.payRateOverride || workplace.payRate;
+      const grossPay = netHours * payRate;
       const taxAmount = workplace.taxRate
         ? (grossPay * workplace.taxRate) / 100
-        : 0
-      const netPay = grossPay - taxAmount
+        : 0;
+      const netPay = grossPay - taxAmount;
 
       return {
         gross: acc.gross + grossPay,
         tax: acc.tax + taxAmount,
         net: acc.net + netPay,
-      }
+      };
     },
-    { gross: 0, tax: 0, net: 0 }
-  )
+    { gross: 0, tax: 0, net: 0 },
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -165,7 +157,7 @@ export default function ShiftCalculator() {
             </TabsTrigger>
             <TabsTrigger
               value="calendar"
-              className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 sm:py-1.5 hidden sm:flex"
+              className="flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 sm:py-1.5 hidden sm:flex"
             >
               <Calendar className="h-4 w-4" />
               <span className="text-xs sm:text-sm">Calendar</span>
@@ -179,7 +171,7 @@ export default function ShiftCalculator() {
             </TabsTrigger>
             <TabsTrigger
               value="settings"
-              className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 sm:py-1.5 hidden sm:flex"
+              className="flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 sm:py-1.5 hidden sm:flex"
             >
               <Settings className="h-4 w-4" />
               <span className="text-xs sm:text-sm">Settings</span>
@@ -224,9 +216,7 @@ export default function ShiftCalculator() {
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Net Pay
-                  </CardTitle>
+                  <CardTitle className="text-sm font-medium">Net Pay</CardTitle>
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -252,8 +242,8 @@ export default function ShiftCalculator() {
                   <div className="space-y-3">
                     {shifts.slice(0, 5).map((shift) => {
                       const workplace = workplaces.find(
-                        (w) => w.id === shift.workplaceId
-                      )
+                        (w) => w.id === shift.workplaceId,
+                      );
                       return (
                         <div
                           key={shift.id}
@@ -263,19 +253,14 @@ export default function ShiftCalculator() {
                             <div
                               className="w-3 h-3 rounded-full"
                               style={{
-                                backgroundColor:
-                                  workplace?.color || "#gray",
+                                backgroundColor: workplace?.color || "#gray",
                               }}
                             />
                             <div>
-                              <p className="font-medium">
-                                {workplace?.name}
-                              </p>
+                              <p className="font-medium">{workplace?.name}</p>
                               <p className="text-sm text-muted-foreground">
-                                {new Date(
-                                  shift.date
-                                ).toLocaleDateString()}{" "}
-                                • {shift.startTime} - {shift.endTime}
+                                {new Date(shift.date).toLocaleDateString()} •{" "}
+                                {shift.startTime} - {shift.endTime}
                               </p>
                             </div>
                           </div>
@@ -286,17 +271,17 @@ export default function ShiftCalculator() {
                                 workplace?.payRate ||
                                 0) *
                               ((new Date(
-                                `1970-01-01T${shift.endTime}`
+                                `1970-01-01T${shift.endTime}`,
                               ).getTime() -
                                 new Date(
-                                  `1970-01-01T${shift.startTime}`
+                                  `1970-01-01T${shift.startTime}`,
                                 ).getTime()) /
                                 (1000 * 60 * 60) -
                                 (shift.breakMinutes || 0) / 60)
                             ).toFixed(2)}
                           </Badge>
                         </div>
-                      )
+                      );
                     })}
                     {shifts.length === 0 && (
                       <p className="text-muted-foreground text-center py-4">
@@ -310,9 +295,7 @@ export default function ShiftCalculator() {
               <Card>
                 <CardHeader>
                   <CardTitle>Workplaces</CardTitle>
-                  <CardDescription>
-                    Your registered workplaces
-                  </CardDescription>
+                  <CardDescription>Your registered workplaces</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
@@ -375,7 +358,7 @@ export default function ShiftCalculator() {
               shifts={shifts}
               workplaces={workplaces}
               onShiftClick={(shift) => {
-                console.log("Shift clicked:", shift)
+                console.log("Shift clicked:", shift);
               }}
             />
           </TabsContent>
@@ -394,5 +377,5 @@ export default function ShiftCalculator() {
         </Tabs>
       </div>
     </div>
-  )
+  );
 }

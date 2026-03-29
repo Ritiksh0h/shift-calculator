@@ -152,26 +152,29 @@ export function ShiftManager({
     )
   }
 
-  // Copy one day's schedule to another specific day
-  const copyDayTo = (fromIndex: number, toIndex: number) => {
+  // Copy one day's schedule to specific day(s)
+  const handleCopyTo = (fromIndex: number, target: string) => {
     const source = dayShifts[fromIndex]
-    setDayShifts((prev) =>
-      prev.map((d) =>
-        d.dayIndex === toIndex
-          ? { ...d, enabled: true, startTime: source.startTime, endTime: source.endTime, breakMinutes: source.breakMinutes }
-          : d
+    if (target === "all") {
+      // Copy to all other enabled days
+      setDayShifts((prev) =>
+        prev.map((d) =>
+          d.enabled && d.dayIndex !== fromIndex
+            ? { ...d, startTime: source.startTime, endTime: source.endTime, breakMinutes: source.breakMinutes }
+            : d
+        )
       )
-    )
-  }
-
-  // Apply one day's schedule to all enabled days
-  const applyTimeToAll = (fromIndex: number) => {
-    const source = dayShifts[fromIndex]
-    setDayShifts((prev) =>
-      prev.map((d) =>
-        d.enabled ? { ...d, startTime: source.startTime, endTime: source.endTime, breakMinutes: source.breakMinutes } : d
+    } else {
+      // Copy to a specific disabled day (enables it)
+      const toIndex = Number(target)
+      setDayShifts((prev) =>
+        prev.map((d) =>
+          d.dayIndex === toIndex
+            ? { ...d, enabled: true, startTime: source.startTime, endTime: source.endTime, breakMinutes: source.breakMinutes }
+            : d
+        )
       )
-    )
+    }
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -541,32 +544,17 @@ export function ShiftManager({
 
                     {/* Day selection + per-day times + breaks */}
                     <div className="grid gap-3">
-                      <div className="flex items-center justify-between">
-                        <Label>Schedule *</Label>
-                        {enabledDays.length >= 2 && firstEnabledDay?.startTime && firstEnabledDay?.endTime && (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="text-xs h-7"
-                            onClick={() => applyTimeToAll(firstEnabledDay.dayIndex)}
-                          >
-                            Apply {firstEnabledDay.dayLabel} to all
-                          </Button>
-                        )}
-                      </div>
+                      <Label>Schedule *</Label>
+                      <p className="text-xs text-muted-foreground -mt-2">Tap a day to add a shift, tap again to remove</p>
 
                       <div className="space-y-2">
                         {daysOfWeekLabels.map((label, index) => {
                           const day = dayShifts[index]
-                          const otherEnabledDays = dayShifts.filter(
-                            (d) => d.enabled && d.dayIndex !== index && d.startTime && d.endTime
-                          )
                           return (
                             <div
                               key={label}
                               className={`rounded-lg border transition-colors ${
-                                day.enabled ? "border-primary/50 bg-muted/50" : "border-transparent"
+                                day.enabled ? "border-primary/50 bg-muted/50" : "border-muted hover:border-muted-foreground/30"
                               }`}
                             >
                               <div className="flex items-center gap-3 p-2">
@@ -579,7 +567,7 @@ export function ShiftManager({
                                 >
                                   {label}
                                 </Button>
-                                {day.enabled && (
+                                {day.enabled ? (
                                   <div className="flex items-center gap-2 flex-1 flex-wrap">
                                     <Input
                                       type="time"
@@ -603,28 +591,31 @@ export function ShiftManager({
                                         className="h-8 text-sm w-[70px]"
                                         placeholder="0"
                                       />
-                                      <span className="text-muted-foreground text-xs">min break</span>
+                                      <span className="text-muted-foreground text-xs shrink-0">min break</span>
                                     </div>
-                                  </div>
-                                )}
-                                {!day.enabled && (
-                                  <div className="flex items-center gap-2 flex-1">
-                                    <span className="text-sm text-muted-foreground">Off</span>
-                                    {otherEnabledDays.length > 0 && (
-                                      <Select onValueChange={(val) => copyDayTo(Number(val), index)}>
-                                        <SelectTrigger className="h-7 text-xs w-auto gap-1 border-dashed">
-                                          <SelectValue placeholder="Copy from..." />
+                                    {/* Copy this day's schedule to other days */}
+                                    {day.startTime && day.endTime && dayShifts.some((d) => !d.enabled) && (
+                                      <Select onValueChange={(val) => handleCopyTo(index, val)}>
+                                        <SelectTrigger className="h-7 text-xs w-auto gap-1 border-dashed ml-auto">
+                                          <SelectValue placeholder="Copy to..." />
                                         </SelectTrigger>
                                         <SelectContent>
-                                          {otherEnabledDays.map((d) => (
-                                            <SelectItem key={d.dayIndex} value={d.dayIndex.toString()}>
-                                              {d.dayLabel} ({d.startTime}–{d.endTime})
-                                            </SelectItem>
-                                          ))}
+                                          {dayShifts
+                                            .filter((d) => !d.enabled)
+                                            .map((d) => (
+                                              <SelectItem key={d.dayIndex} value={d.dayIndex.toString()}>
+                                                {d.dayLabel}
+                                              </SelectItem>
+                                            ))}
+                                          {enabledDays.length >= 2 && (
+                                            <SelectItem value="all">All enabled days</SelectItem>
+                                          )}
                                         </SelectContent>
                                       </Select>
                                     )}
                                   </div>
+                                ) : (
+                                  <span className="text-sm text-muted-foreground">Off</span>
                                 )}
                               </div>
                             </div>
