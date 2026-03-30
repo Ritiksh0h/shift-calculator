@@ -472,7 +472,7 @@ export default function ShiftCalculator() {
         </Tabs>
 
         {/* Footer */}
-        <footer className="mt-8 py-4 border-t text-center">
+        <footer className="mt-8 py-4 text-center">
           <p className="text-xs text-muted-foreground">
             © {new Date().getFullYear()}{" "}
             <a
