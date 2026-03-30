@@ -470,6 +470,22 @@ export default function ShiftCalculator() {
             <SettingsPanel settings={settings} onUpdate={updateSettings} />
           </TabsContent>
         </Tabs>
+
+        {/* Footer */}
+        <footer className="mt-8 py-4 border-t text-center">
+          <p className="text-xs text-muted-foreground">
+            © {new Date().getFullYear()}{" "}
+            <a
+              href="https://ritikshah.vercel.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-foreground transition-colors underline underline-offset-2"
+            >
+              Ritik Shah
+            </a>
+            . All rights reserved.
+          </p>
+        </footer>
       </div>
     </div>
   );
