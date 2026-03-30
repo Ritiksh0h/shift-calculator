@@ -1,11 +1,26 @@
 # Shift Calculator
 
-A shift management app for tracking work hours, pay calculations, and payday schedules across multiple workplaces.
+<p align="center">
+  <img src="public/icons/icon-192x192.png" alt="Shift Calculator" width="80" />
+</p>
+
+A shift management app for hourly workers to track work hours, calculate pay (with tax and overtime), and monitor upcoming paydays across multiple workplaces.
+
+## Features
+
+- **Multi-workplace support** — track different jobs with separate pay rates, tax rates, and colors
+- **Flexible shift scheduling** — single shifts or weekly schedules with per-day times and breaks
+- **Pay calculations** — gross pay, tax deductions, net pay, overtime support
+- **Payday tracking** — countdown to next payday with earnings breakdown
+- **Calendar view** — month view with shift indicators, tap for details
+- **Dark mode** — system-aware theme with manual toggle
+- **Google OAuth + Email/Password auth**
+- **Cloud database** with local settings cache
 
 ## Tech Stack
 
 - **Framework:** Next.js 14 (App Router)
-- **Auth:** NextAuth v5 (Google OAuth + Email/Password)
+- **Auth:** NextAuth v5 (Google OAuth + Credentials)
 - **Database:** Supabase Postgres
 - **ORM:** Drizzle ORM
 - **UI:** shadcn/ui + Tailwind CSS
@@ -14,11 +29,13 @@ A shift management app for tracking work hours, pay calculations, and payday sch
 ## Getting Started
 
 ```bash
-npm install
+npm install --legacy-peer-deps
 npm run dev
 ```
 
 ### Environment Variables
+
+Create a `.env` file:
 
 ```env
 DATABASE_URL=your-supabase-postgres-url
@@ -27,11 +44,18 @@ GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 ```
 
-### Database
+### Database Setup
 
 ```bash
 npx drizzle-kit push
 ```
+
+### Google OAuth Setup
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+2. Create OAuth 2.0 Client ID
+3. Add redirect URI: `http://localhost:3000/api/auth/callback/google`
+4. Copy Client ID and Secret to `.env`
 
 ## Project Structure
 
@@ -40,81 +64,86 @@ app/
   api/
     auth/[...nextauth]/   → NextAuth route handler
     auth/register/        → Email/password registration
-    workplaces/           → Workplaces CRUD
-    shifts/               → Shifts CRUD
+    workplaces/           → Workplaces CRUD (list + individual)
+    shifts/               → Shifts CRUD (list + individual)
     pay-periods/          → Pay periods CRUD
     settings/             → User settings
   layout.tsx              → Root layout (AuthProvider + ThemeProvider)
-  page.tsx                → Main dashboard
+  page.tsx                → Main app (sidebar nav + tab content)
 
 components/
-  auth/auth-form.tsx      → Login/register form (Google + credentials)
-  workplace-manager.tsx   → Workplace CRUD UI
-  shift-manager.tsx       → Shift CRUD UI
-  calendar-view.tsx       → Calendar month view
-  payday-tracker.tsx      → Upcoming payday cards
-  settings-panel.tsx      → Settings UI
+  auth/auth-form.tsx      → Login/register (Google + email/password)
+  workplace-manager.tsx   → Workplace cards + detail view + CRUD
+  shift-manager.tsx       → Shift list + single/weekly schedule forms
+  calendar-view.tsx       → Month calendar with shift dots/details
+  payday-tracker.tsx      → Upcoming payday cards + 30-day summary
+  settings-panel.tsx      → Work settings + app preferences
   next-shift-card.tsx     → Countdown to next shift
-  ui/                     → shadcn components
+  ui/                     → shadcn components + date-picker
 
 hooks/
   use-shift-data.ts       → Main data hook (fetch-based, no server imports)
 
 lib/
-  auth.ts                 → NextAuth config (Google + Credentials + Drizzle adapter)
+  auth.ts                 → NextAuth config (Drizzle adapter)
   auth-provider.tsx       → SessionProvider wrapper
+  settings-storage.ts     → localStorage read/write for settings
   api/auth-helpers.ts     → API route auth helper
   db/
-    index.ts              → Drizzle client (postgres driver)
-    schema.ts             → Drizzle schema (auth tables + app tables)
+    index.ts              → Drizzle client
+    schema.ts             → DB schema (auth + app tables)
     queries/              → Server-side CRUD functions
 ```
 
 ---
 
-## TODO
+## v1.0 — What's Done
+
+- [x] NextAuth (Google OAuth + email/password credentials)
+- [x] Drizzle ORM + Supabase Postgres
+- [x] API routes for all CRUD operations (server-side only)
+- [x] Multi-workplace management with detail view
+- [x] Single shift + weekly schedule creation (per-day times and breaks)
+- [x] Shift collision detection
+- [x] Pay calculations (gross, tax, net, overtime)
+- [x] Payday tracker with earnings breakdown
+- [x] Calendar month view (dots on mobile, details on desktop)
+- [x] Settings with localStorage cache + DB background sync
+- [x] Dark mode (system + manual toggle)
+- [x] Mobile sidebar navigation
+- [x] Responsive layout (mobile, tablet, desktop)
+- [x] DatePicker component (shadcn Calendar + Popover)
+- [x] Timezone-safe date handling
+
+## TODO — v2.0
 
 ### High Priority
 
 - [ ] **Offline support + localStorage sync layer**
-  - Add localStorage as a cache layer over the database
-  - Settings should read/write localStorage first, then sync to DB
-  - Shifts, workplaces, and pay periods should queue changes locally when offline
-  - When back online, sync queued changes to the database
-  - Requires conflict resolution strategy (last-write-wins or timestamp-based)
-  - Requires a sync queue manager to track pending operations
-  - Need to handle partial sync failures gracefully
+  - Cache shifts/workplaces/pay periods in localStorage
+  - Queue offline changes and sync when back online
+  - Conflict resolution (last-write-wins)
 
 - [ ] **Re-add PWA infrastructure**
-  - Add back service worker (Serwist or Workbox)
-  - Add web app manifest (manifest.json)
-  - Add offline fallback page
-  - Add install prompt component
-  - Add offline indicator component
-  - Cache API routes for offline reads
-  - Background sync for offline writes
-
-- [ ] **Settings localStorage layer** (do this first as a stepping stone)
-  - Read settings from localStorage on load (instant, no network wait)
-  - Write settings to localStorage immediately on change
-  - Sync settings to database in the background
-  - On login, merge server settings with local settings (server wins on conflict)
+  - Service worker (Serwist or Workbox)
+  - Web app manifest
+  - Offline fallback page
+  - Install prompt + offline indicator
 
 ### Medium Priority
 
-- [ ] Fix `react-day-picker` / `date-fns` version mismatch (upgrade to rdp v9 or downgrade date-fns to v3)
-- [ ] Clean up unused Radix UI packages (check which ones shadcn actually uses)
-- [ ] Add loading/error states to individual CRUD operations (not just global)
-- [ ] Add shift recurrence support (weekly repeating shifts)
-- [ ] Export shifts to CSV (settings panel has a button but no implementation)
-- [ ] Add middleware to protect routes (redirect unauthenticated users to /login)
+- [ ] Export shifts to CSV
+- [ ] Shift recurrence (weekly repeating shifts)
+- [ ] Auth middleware for route protection
+- [ ] Pay calculator tab (component exists but not wired up)
+- [ ] Fix `react-day-picker` v8 / `date-fns` v4 version mismatch
+- [ ] Loading states on individual CRUD operations
+- [ ] Optimistic updates
 
 ### Low Priority
 
-- [ ] Add proper error boundaries
-- [ ] Add optimistic updates to CRUD operations (update UI before API confirms)
-- [ ] Remove `ignoreBuildErrors` and `ignoreDuringBuilds` from next.config and fix actual errors
-- [ ] Add proper form validation feedback on shift collision
-- [ ] Add pay period auto-advancement (when a pay date passes, create the next period)
-- [ ] Multi-timezone support for shifts
-- [ ] Add a proper /login page (currently auth form renders inline on page.tsx)
+- [ ] Error boundaries
+- [ ] Remove `ignoreBuildErrors` from next.config and fix TS errors
+- [ ] Pay period auto-advancement
+- [ ] Multi-timezone support
+- [ ] Proper /login page (currently inline in page.tsx)

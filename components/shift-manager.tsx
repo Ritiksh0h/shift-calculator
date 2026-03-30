@@ -354,11 +354,11 @@ export function ShiftManager({
   const firstEnabledDay = enabledDays[0]
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Shifts</h2>
-          <p className="text-muted-foreground">Manage your work shifts</p>
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Shifts</h2>
+          <p className="text-sm text-muted-foreground">Manage your work shifts</p>
         </div>
         <Dialog
           open={isAddDialogOpen}

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <!-- Background rounded square -->
+  <rect width="512" height="512" rx="108" fill="#171717"/>
+  
+  <!-- Outer clock ring -->
+  <circle cx="256" cy="256" r="160" stroke="#3b82f6" stroke-width="24" stroke-linecap="round"/>
+  
+  <!-- Clock hour marks -->
+  <line x1="256" y1="120" x2="256" y2="148" stroke="#525252" stroke-width="8" stroke-linecap="round"/>
+  <line x1="256" y1="364" x2="256" y2="392" stroke="#525252" stroke-width="8" stroke-linecap="round"/>
+  <line x1="120" y1="256" x2="148" y2="256" stroke="#525252" stroke-width="8" stroke-linecap="round"/>
+  <line x1="364" y1="256" x2="392" y2="256" stroke="#525252" stroke-width="8" stroke-linecap="round"/>
+  
+  <!-- Hour hand -->
+  <line x1="256" y1="256" x2="256" y2="180" stroke="#f5f5f5" stroke-width="14" stroke-linecap="round"/>
+  
+  <!-- Minute hand -->
+  <line x1="256" y1="256" x2="330" y2="200" stroke="#f5f5f5" stroke-width="10" stroke-linecap="round"/>
+  
+  <!-- Dollar sign accent -->
+  <circle cx="380" cy="380" r="52" fill="#22c55e"/>
+  <text x="380" y="398" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="52" font-weight="700" fill="#fff">$</text>
+  
+  <!-- Center dot -->
+  <circle cx="256" cy="256" r="12" fill="#3b82f6"/>
+</svg>

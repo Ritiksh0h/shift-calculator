@@ -113,6 +113,9 @@ export function AuthForm() {
     <div className="min-h-screen flex items-center justify-center bg-background p-2 sm:p-4">
       <Card className="w-full max-w-sm sm:max-w-md">
         <CardHeader className="text-center px-4 sm:px-6">
+          <div className="flex justify-center mb-2">
+            <img src="/logo.svg" alt="Shift Calculator" className="h-14 w-14 rounded-xl" />
+          </div>
           <CardTitle className="text-xl sm:text-2xl">
             Shift Calculator
           </CardTitle>
